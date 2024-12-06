@@ -33,7 +33,7 @@ typedef struct{
 void move_forward_go_around(oi_t *sensor, int millimeters){
 
      double sum = 0;
-     oi_setWheels(250, 250); // move forward; full speed
+     oi_setWheels(100, 100); // move forward; full speed
 
      while (sum < millimeters) {
      oi_update(sensor);
@@ -52,60 +52,74 @@ void move_forward_go_around(oi_t *sensor, int millimeters){
               turn_cclockwise(sensor, 250);
               move_forward(sensor, 250);
               turn_clockwise(sensor, 250);
-              oi_setWheels(250,250);
+              oi_setWheels(100,100);
               }
 
-     // running into a straight wall/hole
-     if((sensor->cliffFrontLeft) && (sensor->cliffFrontRight)){
-             move_backwards(sensor, 500);
-             sum -= 50;
-             turn_cclockwise(sensor, 180);
-             oi_setWheels(0, 0);
-             }
-
-     // 30 degrees into a corner
-     if((sensor->cliffFrontLeft) && (sensor->cliffLeft)){
-              move_backwards(sensor, 150);
-              sum -= 15;
-              turn_clockwise(sensor, 120);
-              }
-
-     //we are in the left corner (90 deg)
-     if(  ((sensor->cliffFrontLeft) && (sensor->cliffFrontRight)) && (sensor->cliffLeft)){
-         move_backwards(sensor, 150);
-         sum -= 15;
-         turn_clockwise(sensor, 90);
-         }
-
-     // we are in a right corner
-     if(((sensor->cliffFrontLeft) && (sensor->cliffFrontRight)) && (sensor->cliffLeft)){
-         move_backwards(sensor, 150);
-         sum -= 10;
-         turn_cclockwise(sensor, 300);
-         move_forward(sensor,100);
-         turn_clockwise(sensor, 250);
-         move_forward(sensor, 450);
-         turn_clockwise(sensor, 250);
-         oi_setWheels(150, 150);
-         }
-     if(sensor->cliffFrontRight){
+     /*order of needing to check:
+      * 90* left/right
+      * if neither of them, straight ahead wall
+      *
+     */
+     if ((sensor->cliffFrontLeft) && (sensor->cliffFrontRight))
+     {
+         if(sensor->cliffLeft)
+         {
              move_backwards(sensor, 150);
-             sum -= 10;
-             turn_clockwise(sensor, 300);
-             move_forward(sensor, 100);
-             turn_cclockwise(sensor, 250);
-             move_forward(sensor, 450);
-             turn_cclockwise(sensor, 250);
-             oi_setWheels(150, 150);
-             }
+             sum -= 15;
+             turn_clockwise(sensor, 90);
+         }
+         else if (sensor->cliffRight)
+         {
+             move_backwards(sensor, 150);
+             sum -= 15;
+             turn_cclockwise(sensor, 90);
+
+         }
+         else
+         {
+             move_backwards(sensor, 150);
+             sum -=15;
+             turn_clockwise(sensor, 180);
+         }
+         timer_waitMillis(3000);
      }
+
+     //30ish* in a corner
+     if((sensor->cliffFrontLeft) && !(sensor->cliffFrontRight))
+     {
+         if(sensor->cliffLeft)
+         {
+             turn_clockwise(sensor, 90);
+         }
+         else
+         {
+             turn_clockwise(sensor, 30);
+         }
+         timer_waitMillis(3000);
+     }
+
+     //30ish* in a corner, or just hitting a wall at the 30* mark
+     if((sensor->cliffFrontRight) && !(sensor->cliffFrontLeft))
+          {
+              if(sensor->cliffRight)
+              {
+                  turn_cclockwise(sensor, 90);
+              }
+              else
+              {
+                  turn_cclockwise(sensor, 30);
+              }
+              timer_waitMillis(3000);
+          }
+
+
      oi_setWheels(0, 0); // stop
 }
-
+}
 void move_forward(oi_t *sensor, int millimeters){
 
      double sum = 0;
-     oi_setWheels(250, 250); // move forward; full speed
+     oi_setWheels(100, 100); // move forward; full speed
 
      while (sum < millimeters) {
      oi_update(sensor);
@@ -116,7 +130,7 @@ void move_forward(oi_t *sensor, int millimeters){
          turn_clockwise(sensor, 250);
          move_forward(sensor, 250);
          turn_cclockwise(sensor, 250);
-         oi_setWheels(250,250);
+         oi_setWheels(100,100);
          }
      if(sensor->bumpRight){
          move_backwards(sensor, 150);
@@ -124,11 +138,11 @@ void move_forward(oi_t *sensor, int millimeters){
          turn_cclockwise(sensor, 250);
          move_forward(sensor, 250);
          turn_clockwise(sensor, 250);
-         oi_setWheels(250,250);
+         oi_setWheels(100,100);
          }
      }
      oi_setWheels(0, 0); // stop
-}
+ }
 void move_backwards(oi_t *sensor, int millimeters){
 
      double sum = 0;
